@@ -1,0 +1,4 @@
+venv
+submission.csv
+model.ckpt
+__pycache__
