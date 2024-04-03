@@ -30,4 +30,4 @@ The model is trained using the categorical cross-entropy loss function and gradi
 
 ## Results
 
-The trained model achieves an accuracy of `96%` on the Kaggle submission with only one hidden layer.
+The trained model achieves an accuracy of `96%` on the Kaggle competition.
