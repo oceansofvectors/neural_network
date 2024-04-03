@@ -9,7 +9,7 @@ Kyle N. Sorensen (sorensen.kyle@pm.me)
 ## Requirements
 
 - Python 3.x
-- NumPy
+- NumPy (Note: I kept numpy because they make low level calls to C libraries that optimize matrix math, I don't know how to duplicate that, yet :) )
 
 ## Dataset
 
