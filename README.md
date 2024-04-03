@@ -1,6 +1,6 @@
 # Simple Feed Forward Neural Network for MNIST Handwritten Digit Recognition
 
-This project implements a simple feed forward neural network using only NumPy as a dependency to predict the MNIST handwritten digit dataset. The trained model achieves an accuracy of 92% on the Kaggle submission with only one hidden layer.
+This project implements a simple feed forward neural network using only NumPy as a dependency to predict the MNIST handwritten digit dataset. The trained model achieves an accuracy of 96% on the Kaggle submission with only one hidden layer.
 
 ## Creator
 
@@ -30,4 +30,4 @@ The model is trained using the categorical cross-entropy loss function and gradi
 
 ## Results
 
-The trained model achieves an accuracy of `92%` on the Kaggle submission with only one hidden layer.
+The trained model achieves an accuracy of `96%` on the Kaggle submission with only one hidden layer.
