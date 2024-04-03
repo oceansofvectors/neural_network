@@ -2,3 +2,5 @@ venv
 submission.csv
 model.ckpt
 __pycache__
+.DS_Store
+.idea

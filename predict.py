@@ -8,7 +8,7 @@ df_test = pd.read_csv('data/test.csv')
 
 X_test = df_test.values / 255.0  # Normalize the data
 
-model = load()  # Load the serialized model
+model = load(filename='model_epoch_49.ckpt')  # Load the serialized model
 
 
 test_predictions = model.forward(X_test)

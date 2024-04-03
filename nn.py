@@ -1,5 +1,4 @@
 import numpy as np
-
 from helpers import softmax, categorical_cross_entropy
 import pickle
 
@@ -12,43 +11,61 @@ def sigmoid_derivative(x):
     return x * (1 - x)
 
 
-def load():
-    with open("model.ckpt", "rb") as f:
+def load(filename):
+    with open(filename, "rb") as f:
         return pickle.load(f)
 
 
-class MultiClassNN:
-    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.01):
-        self.learning_rate = learning_rate
-        self.weights_input_hidden = np.random.randn(input_size, hidden_size) * 0.01
-        self.bias_hidden = np.zeros((1, hidden_size))
-        self.weights_hidden_output = np.random.randn(hidden_size, output_size) * 0.01
-        self.bias_output = np.zeros((1, output_size))
+class Layer:
+    def __init__(self, input_size, output_size, activation):
+        self.weights = np.random.randn(input_size, output_size) * 0.01
+        self.bias = np.zeros((1, output_size))
+        self.activation = activation
 
     def forward(self, X):
-        self.hidden = sigmoid(np.dot(X, self.weights_input_hidden) + self.bias_hidden)
-        self.output = softmax(np.dot(self.hidden, self.weights_hidden_output) + self.bias_output)
+        self.input = X
+        self.output = self.activation(np.dot(X, self.weights) + self.bias)
         return self.output
 
-    def checkpoint(self):
-        with open("model.ckpt", "wb") as f:
+    def backward(self, gradient, learning_rate):
+        if self.activation == sigmoid:
+            activation_gradient = sigmoid_derivative(self.output)
+        elif self.activation == softmax:
+            activation_gradient = 1
+        else:
+            raise ValueError("Unsupported activation function")
+
+        gradient = gradient * activation_gradient
+        input_gradient = np.dot(gradient, self.weights.T)
+
+        d_weights = np.dot(self.input.T, gradient)
+        d_bias = np.sum(gradient, axis=0, keepdims=True)
+
+        self.weights -= learning_rate * d_weights
+        self.bias -= learning_rate * d_bias
+
+        return input_gradient
+
+
+class MultiClassNN:
+    def __init__(self, layers, learning_rate=0.01):
+        self.layers = layers
+        self.learning_rate = learning_rate
+
+    def forward(self, X):
+        for layer in self.layers:
+            X = layer.forward(X)
+        return X
+
+    def checkpoint(self, filename):
+        with open(filename, "wb") as f:
             f.write(pickle.dumps(self))
 
     def backward(self, X, y):
-        # Assume y is one-hot encoded
-        loss_gradient = (self.output - y) / y.shape[0]  # Gradient of categorical cross-entropy
-        hidden_gradient = np.dot(loss_gradient, self.weights_hidden_output.T) * sigmoid_derivative(self.hidden)
+        loss_gradient = (self.layers[-1].output - y) / y.shape[0]  # Gradient of categorical cross-entropy
 
-        d_weights_hidden_output = np.dot(self.hidden.T, loss_gradient)
-        d_bias_output = np.sum(loss_gradient, axis=0, keepdims=True)
-        d_weights_input_hidden = np.dot(X.T, hidden_gradient)
-        d_bias_hidden = np.sum(hidden_gradient, axis=0, keepdims=True)
-
-        # Update parameters
-        self.weights_input_hidden -= self.learning_rate * d_weights_input_hidden
-        self.bias_hidden -= self.learning_rate * d_bias_hidden
-        self.weights_hidden_output -= self.learning_rate * d_weights_hidden_output
-        self.bias_output -= self.learning_rate * d_bias_output
+        for layer in reversed(self.layers):
+            loss_gradient = layer.backward(loss_gradient, self.learning_rate)
 
     def train(self, X, y, epochs=10, batch_size=64):
         for epoch in range(epochs):
@@ -61,6 +78,4 @@ class MultiClassNN:
             if epoch % 1 == 0:
                 print(f'Loss at epoch {epoch}: {loss}')
 
-            if epoch % 10 == 0:
-                print("Writing checkpoint")
-                self.checkpoint()
+        self.checkpoint(f"model_epoch_{epoch}.ckpt")
